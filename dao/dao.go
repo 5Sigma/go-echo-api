@@ -6,7 +6,8 @@ import (
 	"github.com/5sigma/vox"
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
-
+	// Sqlite driver import
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	// Postgres driver import
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
@@ -29,6 +30,20 @@ func New() *DAO {
 	if err != nil {
 		vox.Fatal(err.Error())
 	}
+	migrate(db)
+	return &DAO{
+		DB: db,
+	}
+}
+
+// NewMemory - Creates a new data access layer that uses an internal memory
+// store.
+func NewMemory() *DAO {
+	db, err := gorm.Open("sqlite3", ":memory:")
+	if err != nil {
+		vox.Fatal(err.Error())
+	}
+	migrate(db)
 	return &DAO{
 		DB: db,
 	}

@@ -6,30 +6,22 @@ import (
 	"testing"
 
 	"github.com/5sigma/go-echo-api/dao"
+	"github.com/5sigma/go-echo-api/models"
 	"github.com/Jeffail/gabs"
-	"github.com/jinzhu/gorm"
-
 	"github.com/labstack/echo"
-	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
-type epFunc func(echo.Context) error
-
 func TestListUsers(t *testing.T) {
-	db, mock, _ := sqlmock.New()
-	gDB, _ := gorm.Open("postgres", db)
-	h := Handler{DB: &dao.DAO{DB: gDB}}
+	h := Handler{DB: dao.NewMemory()}
 
-	mockRows := sqlmock.NewRows([]string{"id", "first_name", "last_name", "email_address"})
-	mockRows.AddRow(1, "alice", "alisson", "test@test.com")
-	mock.ExpectQuery("SELECT").WillReturnRows(mockRows)
+	h.DB.CreateUser(models.User{})
+	h.DB.CreateUser(models.User{})
 
 	e := echo.New()
-	req := httptest.NewRequest(echo.GET, "/api/v1/users", strings.NewReader(""))
+	req := httptest.NewRequest(echo.GET, "/api/users", strings.NewReader(""))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
-
 	err := h.ListUsers(c)
 	if err != nil {
 		t.Errorf("Error calling handler: %s", err.Error())
@@ -50,26 +42,24 @@ func TestListUsers(t *testing.T) {
 	}
 
 	usersArray, _ := json.Path("users").Children()
-	if len(usersArray) != 1 {
+	if len(usersArray) != 2 {
 		t.Errorf("Users array length was %d", len(usersArray))
 	}
-
 }
 
 func TestGetUser(t *testing.T) {
-	db, mock, _ := sqlmock.New()
-	gDB, _ := gorm.Open("postgres", db)
-	h := Handler{DB: &dao.DAO{DB: gDB}}
+	h := Handler{DB: dao.NewMemory()}
 
-	mockRows := sqlmock.NewRows([]string{"id", "first_name", "last_name", "email_address"})
-	mockRows.AddRow(1, "alice", "alisson", "test@test.com")
-	mock.ExpectQuery("id=1").WillReturnRows(mockRows)
+	h.DB.CreateUser(models.User{FirstName: "test"})
 
 	e := echo.New()
-	req := httptest.NewRequest(echo.GET, "/api/v1/users", strings.NewReader(""))
+	req := httptest.NewRequest(echo.GET, "/api/users", strings.NewReader(""))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+	c.SetPath("/users/:id")
+	c.SetParamNames("id")
+	c.SetParamValues("1")
 
 	err := h.GetUser(c)
 	if err != nil {
@@ -80,11 +70,16 @@ func TestGetUser(t *testing.T) {
 
 	json, err := gabs.ParseJSON([]byte(resString))
 	if err != nil {
-		t.Errorf("Error reading JSON: %s", err.Error())
+		t.Errorf("Error reading JSON: %s\n%s\n", err.Error(), resString)
+		return
 	}
 
 	if !json.Path("firstName").Exists() {
 		t.Errorf("first name not present in response.\n%s\n", resString)
+	} else {
+		if v, _ := json.Path("firstName").Data().(string); v != "test" {
+			t.Errorf("first name not valid in response: %s", v)
+		}
 	}
 
 }
