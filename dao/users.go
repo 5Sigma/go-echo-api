@@ -19,7 +19,7 @@ func (dao *DAO) GetUserByID(ID uint) *models.User {
 }
 
 // CreateUser - Create a new user record.
-func (dao *DAO) CreateUser(user models.User) *models.User {
+func (dao *DAO) CreateUser(user *models.User) *models.User {
 	dao.DB.Create(&user)
-	return &user
+	return user
 }

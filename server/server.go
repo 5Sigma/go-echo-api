@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -14,6 +14,9 @@ import (
 
 // StartServer - starts the api server.
 func StartServer() {
+	var (
+		db *dao.DAO
+	)
 	port := viper.GetString("port")
 
 	e := echo.New()
@@ -23,9 +26,16 @@ func StartServer() {
 	server := &http.Server{
 		Addr: fmt.Sprintf(":%s", port),
 	}
-	h := Handler{
-		DAO: dao.New(),
+
+	if viper.GetBool("memdb") {
+		db = dao.NewMemory()
+	} else {
+		db = dao.New()
+	}
+
+	h := endpoints.Handler{
+		DB: db,
 	}
 	endpoints.Setup(e, h)
-	vox.Fatal(e.StartServer(s))
+	vox.Fatal(e.StartServer(server))
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/5sigma/go-echo-api/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -36,7 +37,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		StartServer()
+		server.StartServer()
 	},
 }
 
@@ -48,6 +49,10 @@ func init() {
 	runCmd.PersistentFlags().StringP("port", "p", "5000", "Web server listening port")
 	viper.BindPFlag("port", runCmd.PersistentFlags().Lookup("port"))
 	viper.SetDefault("port", "5000")
+
+	runCmd.Flags().Bool("memdb", false, "Run using an in memory database")
+	viper.BindPFlag("memdb", runCmd.Flags().Lookup("memdb"))
+	viper.SetDefault("memdb", false)
 }
 
 // initConfig reads in config file and ENV variables if set.

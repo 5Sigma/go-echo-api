@@ -4,9 +4,11 @@ import "time"
 
 // APIKey - User API access tokens
 type APIKey struct {
-	ID        uint      `json:"id"`
-	Key       string    `json:"key"`
-	CreatedAt time.Time `json:"createdAt"`
-	UserID    uint      `json:"userId"`
-	User      User      `json:"user"`
+	ID         uint      `json:"-"`
+	Key        string    `json:"key"`
+	CreatedAt  time.Time `json:"createdAt"`
+	UserID     uint      `json:"-"`
+	User       User      `json:"-"`
+	SessionKey bool      `json:"-"`
+	Expiration time.Time `json:"expirationDate"`
 }

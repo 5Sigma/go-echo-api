@@ -14,8 +14,8 @@ import (
 func TestListUsers(t *testing.T) {
 	h := Handler{DB: dao.NewMemory()}
 
-	h.DB.CreateUser(models.User{})
-	h.DB.CreateUser(models.User{})
+	h.DB.CreateUser(&models.User{})
+	h.DB.CreateUser(&models.User{})
 
 	e := echo.New()
 	req := httptest.NewRequest(echo.GET, "/api/users", strings.NewReader(""))
@@ -50,7 +50,7 @@ func TestListUsers(t *testing.T) {
 func TestGetUser(t *testing.T) {
 	h := Handler{DB: dao.NewMemory()}
 
-	h.DB.CreateUser(models.User{FirstName: "test"})
+	h.DB.CreateUser(&models.User{FirstName: "test"})
 
 	e := echo.New()
 	req := httptest.NewRequest(echo.GET, "/api/users", strings.NewReader(""))
